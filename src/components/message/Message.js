@@ -60,7 +60,7 @@ const Message = ({ data }) => {
   return (
     <Container isLeft={isLeft} ref={scrollRef}>
       <ImageWrapper style={{ gridGap: data?.image && "1rem" }} isLeft={isLeft}>
-        <Text isLeft={isLeft}>{data?.text}</Text>
+        {data?.text && <Text isLeft={isLeft}>{data?.text}</Text>}
         {data?.image && <Prev src={data?.image} />}
       </ImageWrapper>
       <ImageWrapper>
