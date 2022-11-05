@@ -1,0 +1,23 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #a8bcff;
+  font-family: "Roboto";
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+button:disabled {
+  background-color: #ccc !important;
+  color: white !important;
+  cursor: not-allowed !important;
+}
+input:disabled {
+  cursor: not-allowed !important;
+}
