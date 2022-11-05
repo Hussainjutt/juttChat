@@ -1,10 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import { IoIosVideocam } from "react-icons/io";
-import { HiOutlineLink } from "react-icons/hi";
-import { ImUserPlus } from "react-icons/im";
 import { MdAddPhotoAlternate } from "react-icons/md";
-import { SlOptionsVertical } from "react-icons/sl";
 import { ChatContext } from "../../context/chatContext";
 import {
   arrayUnion,
@@ -14,7 +10,7 @@ import {
   Timestamp,
   updateDoc,
 } from "firebase/firestore";
-import { db, storage } from "../../firebase";
+import { auth, db, storage } from "../../firebase";
 import { Formik } from "formik";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { v4 as uuid } from "uuid";
@@ -22,6 +18,9 @@ import { toast } from "react-toastify";
 import { AuthContext } from "../../context/AuthContext";
 import Message from "../message/Message";
 import Bg from "../../assets/chatPanalbg.png";
+import { BeatLoader } from "react-spinners";
+import { signOut } from "firebase/auth";
+import { RiLogoutCircleRLine } from "react-icons/ri";
 
 const Container = styled.div`
   width: 100%;
@@ -32,7 +31,7 @@ const Header = styled.div`
   padding: 1rem;
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: center;
 `;
 const Body = styled.div`
   height: 100vh;
@@ -69,16 +68,29 @@ const Img = styled.img`
   height: 40px;
   border-radius: 50%;
   object-fit: fill;
+  background: #93a5e5;
 `;
 const Name = styled.span`
   font-family: monospace;
-  font-size: 16px;
+  font-size: ${(props) => (props.h ? "18px" : "16px")};
   color: white;
+  padding: ${(props) => props.h && "5px 0"};
 `;
 const Icons = styled.div`
   display: flex;
   align-items: center;
-  grid-gap: 12px;
+  background-color: #2f2c53;
+  color: white;
+  font-family: cursive;
+  font-size: 14px;
+  padding: 6px 13px;
+  grid-gap: 5px;
+  border-radius: 22px;
+  cursor: pointer;
+  &:hover {
+    transition: 0.2s;
+    transform: scale(1.1);
+  }
 `;
 const Icon = styled.span`
   color: #dddcf7;
@@ -98,6 +110,7 @@ const Button = styled.button`
   font-family: monospace;
   color: white;
   background-color: #5f5b8f;
+  min-width: 72px;
   padding: 0.4rem 0.8rem;
   cursor: pointer;
   border-radius: 17px;
@@ -133,6 +146,7 @@ const ChatPanal = ({ setLastMessage }) => {
   }, [data?.chatId]);
   const sendText = async (vals, resetForm) => {
     try {
+      setLoading(true);
       if (vals.image !== "") {
         const name = new Date().getTime() + vals.image.name;
         const storageRef = ref(storage, name);
@@ -142,18 +156,11 @@ const ChatPanal = ({ setLastMessage }) => {
           (snapShot) => {
             switch (snapShot.state) {
               case "paused":
-                setLoading(true);
+                // setLoading(true);
                 break;
               case "running":
-                setLoading(true);
+                // setLoading(true);
                 break;
-            }
-            let progress =
-              (snapShot.bytesTransferred / snapShot.totalBytes) * 100;
-            if (progress !== null && progress < 100) {
-              setLoading(true);
-            } else {
-              setLoading(false);
             }
           },
           (errors) => {
@@ -171,7 +178,8 @@ const ChatPanal = ({ setLastMessage }) => {
                 }),
               }).then((res) => {
                 resetForm();
-                toast.success("Message send scus");
+                toast.success("Message hase send successfully");
+                setLoading(false);
               });
             });
           }
@@ -186,7 +194,8 @@ const ChatPanal = ({ setLastMessage }) => {
           }),
         }).then((res) => {
           resetForm();
-          toast.success("Message send scus");
+          toast.success("Message hase send successfully");
+          setLoading(false);
         });
       }
       let msg = vals?.text;
@@ -209,39 +218,31 @@ const ChatPanal = ({ setLastMessage }) => {
   return (
     <Container>
       <Header>
-        {data?.chatId !== "null" ? (
-          <>
-            <Profile>
+        <Profile>
+          {data?.chatId !== "null" ? (
+            <>
               <Img src={data?.user?.photoURL} />
               <Name>{data?.user?.displayName}</Name>
-            </Profile>{" "}
-            <Icons>
-              <Icon style={{ fontSize: "25px" }}>
-                <IoIosVideocam />
-              </Icon>
-              <Icon style={{ fontSize: "20px" }}>
-                <ImUserPlus />
-              </Icon>
-              <Icon>
-                <SlOptionsVertical />
-              </Icon>
-            </Icons>
-          </>
-        ) : (
-          <p
-            style={{
-              fontFamily: "cursive",
-              fontWeight: "bold",
-              color: "white",
-            }}
-          >
-            Please Select someone to start chat
-          </p>
-        )}
+            </>
+          ) : (
+            <Name h={true}>Please select someone to start chat</Name>
+          )}
+        </Profile>{" "}
+        <Icons
+          onClick={() => {
+            signOut(auth);
+          }}
+        >
+          <Icon>
+            {" "}
+            <RiLogoutCircleRLine />
+          </Icon>{" "}
+          LogOut
+        </Icons>
       </Header>
       <Body bg={Bg}>
         {message.map((el, i) => (
-          <Message data={el} />
+          <Message data={el} img={data?.user?.photoURL} />
         ))}
       </Body>
       <Formik
@@ -269,15 +270,31 @@ const ChatPanal = ({ setLastMessage }) => {
                 style={{ display: "none" }}
                 ref={imgRef}
                 onChange={(e) => {
-                  setFieldValue("image", e.target.files[0]);
+                  if (
+                    ["image/jpg", "image/png", "image/jpeg"].includes(
+                      e.target.files[0].type
+                    ) ||
+                    ["video/mp4", "video/x-m4v", "video/*"].includes(
+                      e.target.files[0]
+                    )
+                  ) {
+                    setFieldValue("image", e.target.files[0]);
+                  } else {
+                    toast.error(
+                      "Please Provide an valid image or video format"
+                    );
+                  }
                 }}
                 disabled={data?.chatId === "null"}
               />
               <UploadIcon>
                 <MdAddPhotoAlternate onClick={() => imgRef.current.click()} />
               </UploadIcon>
-              <Button type="submit" disabled={data?.chatId === "null"}>
-                Send
+              <Button
+                type="submit"
+                disabled={data?.chatId === "null" || Loading}
+              >
+                {Loading ? <BeatLoader color="#000" size={10} /> : "Send"}
               </Button>
             </Footer>
           </form>

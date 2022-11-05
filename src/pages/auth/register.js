@@ -9,6 +9,7 @@ import { auth, db, storage } from "../../firebase";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import { doc, setDoc } from "firebase/firestore";
 import { toast } from "react-toastify";
+import { BeatLoader } from "react-spinners";
 
 const Container = styled.div`
   width: 100%;
@@ -131,6 +132,7 @@ const Register = () => {
     );
   };
   const submit = async (values) => {
+    setLoading(true);
     try {
       const user = await createUserWithEmailAndPassword(
         auth,
@@ -148,6 +150,7 @@ const Register = () => {
       await setDoc(doc(db, "userChats", user.user.uid), {});
       toast.success("Registered successfully");
       setTimeout(() => {
+        setLoading(false);
         navigate("/");
       }, 1000);
     } catch (err) {
@@ -267,7 +270,7 @@ const Register = () => {
               />
             </InputWrapper>
             <Button type="submit" disabled={loading}>
-              Register
+              {loading ? <BeatLoader color="#fff" /> : "Register"}
             </Button>
             <Divider>
               <Or>Or</Or>

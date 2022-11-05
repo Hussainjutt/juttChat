@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { Formik } from "formik";
 import * as yup from "yup";
@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
 import { toast } from "react-toastify";
+import { BeatLoader } from "react-spinners";
 const Container = styled.div`
   width: 100%;
   max-width: 450px;
@@ -88,6 +89,7 @@ const Error = ({ isError, error }) => {
 };
 const Login = () => {
   const navigate = useNavigate();
+  const [loader, setLoader] = useState(false);
   return (
     <Container>
       <H1>Jutt Chat&#9996;</H1>
@@ -99,10 +101,12 @@ const Login = () => {
         }}
         validationSchema={schema}
         onSubmit={(values) => {
+          setLoader(true);
           signInWithEmailAndPassword(auth, values.email, values.password)
             .then((res) => {
               toast.success("Sign In successfully");
               setTimeout(() => {
+                setLoader(false);
                 navigate("/home");
               }, 1000);
             })
@@ -139,7 +143,9 @@ const Login = () => {
                 error={errors.password}
               />
             </InputWrapper>
-            <Button type="submit">LogIn</Button>
+            <Button type="submit" disabled={loader}>
+              {loader ? <BeatLoader color="#fff" /> : "LogIn"}
+            </Button>
             <Divider>
               <Or>Or</Or>
             </Divider>

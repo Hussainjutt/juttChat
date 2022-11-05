@@ -18,6 +18,7 @@ import {
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { ChatContext } from "../../context/chatContext";
+import { ClipLoader } from "react-spinners";
 
 const Container = styled.div`
   width: 100%;
@@ -42,6 +43,7 @@ const Img = styled.img`
   height: 30px;
   border-radius: 50%;
   object-fit: fill;
+  background: #93a5e5;
 `;
 const Profile = styled.div`
   display: flex;
@@ -56,21 +58,6 @@ const Name = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-`;
-const Button = styled.button`
-  font-family: monospace;
-  color: white;
-  background-color: #5f5b8f;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
-  border-radius: 17px;
-  border: 2px solid #5f5b8f;
-  &:hover {
-    transition: 0.4s;
-    border: 2px solid #5f5b8f;
-    background-color: transparent;
-    border-radius: 17px;
-  }
 `;
 const Wrapper = styled.div`
   display: flex;
@@ -124,20 +111,23 @@ const UserImg = styled.img`
   height: 50px;
   object-fit: fill;
   border-radius: 50%;
+  background: #93a5e5;
 `;
 const Message = styled.p`
   margin: 0;
   color: #ccc;
   font-size: 14px;
+  width: 50px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 const Box = styled.div``;
 const UserList = () => {
-  const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
-  const [userName, setUserName] = useState(null);
   const [user, setUser] = useState(null);
   const [chats, setChats] = useState([]);
-  const handleSearch = async () => {
+  const [loader, setLoader] = useState(false);
+  const handleSearch = async (userName) => {
     const q = query(
       collection(db, "users"),
       where("user_name", "==", userName)
@@ -163,7 +153,6 @@ const UserList = () => {
     try {
       const res = await getDoc(doc(db, "chats", combineId));
       if (!res.exists()) {
-        alert("hey");
         await setDoc(doc(db, "chats", combineId), { messages: [] });
         await updateDoc(doc(db, "userChats", currentUser.uid), {
           [combineId + ".userinfo"]: {
@@ -189,8 +178,10 @@ const UserList = () => {
   };
   useEffect(() => {
     if (currentUser.uid) {
+      setLoader(true);
       const unsub = onSnapshot(doc(db, "userChats", currentUser.uid), (doc) => {
         setChats(doc.data());
+        setLoader(false);
       });
       return () => {
         unsub();
@@ -214,20 +205,12 @@ const UserList = () => {
             <Name title={currentUser?.displayName}>
               {currentUser?.displayName}
             </Name>
-            <Button
-              onClick={() => {
-                signOut(auth);
-              }}
-            >
-              LogOut
-            </Button>
           </Profile>
         </Wrapper>
         <Input
           type="text"
           placeholder="Finds an chat"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
+          onChange={(e) => handleSearch(e.target.value)}
           onKeyDown={handleKey}
         />
         {user && (
@@ -240,17 +223,31 @@ const UserList = () => {
         )}
       </Header>
       <Body>
-        {Object.entries(chats)
-          ?.sort((a, b) => b[1]?.date - a[1]?.date)
-          ?.map((el, i) => (
-            <User key={i} onClick={() => openChat(el[1]?.userinfo)}>
-              <UserImg src={el[1]?.userinfo?.photoURL} />{" "}
-              <Box>
-                <Name user={true}>{el[1]?.userinfo?.displayName}</Name>
-                <Message>{el[1]?.lastMessage?.msg}</Message>
-              </Box>
-            </User>
-          ))}
+        {loader ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "2rem 0",
+            }}
+          >
+            <ClipLoader color="#ccc" size={70} />
+          </div>
+        ) : (
+          Object.entries(chats)
+            ?.sort((a, b) => b[1]?.date - a[1]?.date)
+            ?.map((el, i) => (
+              <User key={i} onClick={() => openChat(el[1]?.userinfo)}>
+                <UserImg src={el[1]?.userinfo?.photoURL} />{" "}
+                <Box>
+                  <Name user={true}>{el[1]?.userinfo?.displayName}</Name>
+                  <Message title={el[1]?.lastMessage?.msg}>
+                    {el[1]?.lastMessage?.msg}
+                  </Message>
+                </Box>
+              </User>
+            ))
+        )}
       </Body>
     </Container>
   );
