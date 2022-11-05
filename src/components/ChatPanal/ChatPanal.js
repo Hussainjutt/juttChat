@@ -118,7 +118,7 @@ const UploadIcon = styled.span`
 const ChatPanal = ({ setLastMessage }) => {
   const { data } = useContext(ChatContext);
   const [message, setMessage] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [Loading, setLoading] = useState(false);
   const imgRef = useRef();
   const { currentUser } = useContext(AuthContext);
   useEffect(() => {
