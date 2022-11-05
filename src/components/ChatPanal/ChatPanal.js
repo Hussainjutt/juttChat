@@ -125,7 +125,7 @@ const Button = styled.button`
 `;
 const UploadIcon = styled.span`
   color: gray;
-  font-size: 20px;
+  font-size: 26px;
   cursor: pointer;
 `;
 const ChatPanal = ({ setLastMessage }) => {
@@ -146,71 +146,75 @@ const ChatPanal = ({ setLastMessage }) => {
   }, [data?.chatId]);
   const sendText = async (vals, resetForm) => {
     try {
-      setLoading(true);
-      if (vals.image !== "") {
-        const name = new Date().getTime() + vals.image.name;
-        const storageRef = ref(storage, name);
-        const UploadTask = uploadBytesResumable(storageRef, vals.image);
-        UploadTask.on(
-          "state_changed",
-          (snapShot) => {
-            switch (snapShot.state) {
-              case "paused":
-                // setLoading(true);
-                break;
-              case "running":
-                // setLoading(true);
-                break;
-            }
-          },
-          (errors) => {
-            console.error(errors);
-          },
-          () => {
-            getDownloadURL(UploadTask.snapshot.ref).then((res) => {
-              updateDoc(doc(db, "chats", data?.chatId), {
-                messages: arrayUnion({
-                  id: uuid(),
-                  text: vals.text,
-                  image: res,
-                  date: Timestamp.now(),
-                  senderId: currentUser?.uid,
-                }),
-              }).then((res) => {
-                resetForm();
-                toast.success("Message hase send successfully");
-                setLoading(false);
+      if (vals.text || vals.image) {
+        setLoading(true);
+        if (vals.image !== "") {
+          const name = new Date().getTime() + vals.image.name;
+          const storageRef = ref(storage, name);
+          const UploadTask = uploadBytesResumable(storageRef, vals.image);
+          UploadTask.on(
+            "state_changed",
+            (snapShot) => {
+              switch (snapShot.state) {
+                case "paused":
+                  // setLoading(true);
+                  break;
+                case "running":
+                  // setLoading(true);
+                  break;
+              }
+            },
+            (errors) => {
+              console.error(errors);
+            },
+            () => {
+              getDownloadURL(UploadTask.snapshot.ref).then((res) => {
+                updateDoc(doc(db, "chats", data?.chatId), {
+                  messages: arrayUnion({
+                    id: uuid(),
+                    text: vals.text,
+                    image: res,
+                    date: Timestamp.now(),
+                    senderId: currentUser?.uid,
+                  }),
+                }).then((res) => {
+                  setLoading(false);
+                  toast.success("Message hase send successfully");
+                  resetForm();
+                });
               });
-            });
-          }
-        );
-      } else {
-        updateDoc(doc(db, "chats", data?.chatId), {
-          messages: arrayUnion({
-            id: uuid(),
-            text: vals.text,
-            date: Timestamp.now(),
-            senderId: currentUser?.uid,
-          }),
-        }).then((res) => {
-          resetForm();
-          toast.success("Message hase send successfully");
-          setLoading(false);
+            }
+          );
+        } else {
+          updateDoc(doc(db, "chats", data?.chatId), {
+            messages: arrayUnion({
+              id: uuid(),
+              text: vals.text,
+              date: Timestamp.now(),
+              senderId: currentUser?.uid,
+            }),
+          }).then((res) => {
+            setLoading(false);
+            toast.success("Message hase send successfully");
+            resetForm();
+          });
+        }
+        let msg = vals?.text;
+        await updateDoc(doc(db, "userChats", currentUser?.uid), {
+          [data?.chatId + ".lastMessage"]: {
+            msg,
+          },
+          [data?.chatId + ".date"]: serverTimestamp(),
         });
+        await updateDoc(doc(db, "userChats", data?.user?.uid), {
+          [data?.chatId + ".lastMessage"]: {
+            msg,
+          },
+          [data?.chatId + ".date"]: serverTimestamp(),
+        });
+      } else {
+        toast.error("please type an message");
       }
-      let msg = vals?.text;
-      await updateDoc(doc(db, "userChats", currentUser?.uid), {
-        [data?.chatId + ".lastMessage"]: {
-          msg,
-        },
-        [data?.chatId + ".date"]: serverTimestamp(),
-      });
-      await updateDoc(doc(db, "userChats", data?.user?.uid), {
-        [data?.chatId + ".lastMessage"]: {
-          msg,
-        },
-        [data?.chatId + ".date"]: serverTimestamp(),
-      });
     } catch (err) {
       toast.error(err.message);
     }
@@ -263,7 +267,7 @@ const ChatPanal = ({ setLastMessage }) => {
                 name="text"
                 onChange={handleChange}
                 value={values.text}
-                disabled={data?.chatId === "null"}
+                disabled={data?.chatId === "null" || Loading}
               />{" "}
               <Input
                 type="file"
@@ -285,9 +289,15 @@ const ChatPanal = ({ setLastMessage }) => {
                     );
                   }
                 }}
-                disabled={data?.chatId === "null"}
+                disabled={data?.chatId === "null" || Loading}
               />
-              <UploadIcon>
+              <UploadIcon
+                style={{
+                  cursor: data?.chatId === "null" || (Loading && "not-allowed"),
+                  color: values.image && "#009687",
+                }}
+                title={values.image?.name}
+              >
                 <MdAddPhotoAlternate onClick={() => imgRef.current.click()} />
               </UploadIcon>
               <Button
