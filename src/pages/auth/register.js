@@ -241,29 +241,24 @@ const Register = () => {
                 style={{ display: "none" }}
                 ref={clickRef}
                 onChange={(e) => {
-                  if (e.target.files[0].size <= 160 * 1024) {
-                    if (
-                      [
-                        "image/jpg",
-                        "image/jpeg",
-                        "image/gif",
-                        "image/png",
-                      ].includes(e.target.files[0].type)
-                    ) {
-                      setLoading(true);
-                      let file = e.target.files[0];
-                      UploadFile(file, setFieldValue);
-                      setName(file.name);
-                    } else {
-                      setErrors({
-                        ...errors,
-                        avatar: "Please provide an valid format",
-                      });
-                      setName("Please provide an valid format");
-                    }
+                  if (
+                    [
+                      "image/jpg",
+                      "image/jpeg",
+                      "image/gif",
+                      "image/png",
+                    ].includes(e.target.files[0].type)
+                  ) {
+                    setLoading(true);
+                    let file = e.target.files[0];
+                    UploadFile(file, setFieldValue);
+                    setName(file.name);
                   } else {
-                    setErrors({ ...errors, avatar: "File is to large" });
-                    setName("File is to large");
+                    setErrors({
+                      ...errors,
+                      avatar: "Please provide an valid format",
+                    });
+                    setName("Please provide an valid format");
                   }
                 }}
               />
