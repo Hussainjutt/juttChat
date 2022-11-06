@@ -24,6 +24,9 @@ const Container = styled.div`
   width: 100%;
   max-width: 350px;
   background-color: #3e3c62;
+  @media (max-width: 576px) {
+    max-width: 100%;
+  }
 `;
 const Header = styled.div`
   background-color: #2f2c53;
@@ -91,6 +94,9 @@ const Body = styled.div`
   &::-webkit-scrollbar-thumb:hover {
     background: #7489d9;
   }
+  @media (max-width: 576px) {
+    max-height: 76.6vh;
+  }
 `;
 const User = styled.div`
   display: flex;
@@ -122,7 +128,7 @@ const Message = styled.p`
   text-overflow: ellipsis;
 `;
 const Box = styled.div``;
-const UserList = () => {
+const UserList = ({ setShow, ...props }) => {
   const { currentUser } = useContext(AuthContext);
   const [user, setUser] = useState(null);
   const [chats, setChats] = useState([]);
@@ -190,13 +196,14 @@ const UserList = () => {
   }, []);
   const { dispatch } = useContext(ChatContext);
   const openChat = (u) => {
+    setShow(true);
     dispatch({
       type: "CHANGE_USER",
       payload: u,
     });
   };
   return (
-    <Container>
+    <Container {...props}>
       <Header>
         <Wrapper>
           <Title>Jutt Chat&#9996;</Title>

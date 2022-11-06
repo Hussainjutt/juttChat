@@ -21,10 +21,15 @@ import Bg from "../../assets/chatPanalbg.png";
 import { BeatLoader } from "react-spinners";
 import { signOut } from "firebase/auth";
 import { RiLogoutCircleRLine } from "react-icons/ri";
+import { IoIosArrowBack } from "react-icons/io";
 
 const Container = styled.div`
   width: 100%;
   max-width: 650px;
+  @media (max-width: 576px) {
+    max-width: 100%;
+    display: none;
+  }
 `;
 const Header = styled.div`
   background-color: #5f5b8f;
@@ -48,6 +53,9 @@ const Body = styled.div`
   }
   &::-webkit-scrollbar-thumb:hover {
     background: #7489d9;
+  }
+  @media (max-width: 576px) {
+    max-height: 74.9vh;
   }
 `;
 const Footer = styled.div`
@@ -128,7 +136,18 @@ const UploadIcon = styled.span`
   font-size: 26px;
   cursor: pointer;
 `;
-const ChatPanal = ({ setLastMessage }) => {
+const GoBack = styled.span`
+  display: none;
+  color: white;
+  margin-left: -10px;
+  font-size: 24px;
+  position: relative;
+  top: 3px;
+  @media (max-width: 576px) {
+    display: unset;
+  }
+`;
+const ChatPanal = ({ setShow, ...props }) => {
   const { data } = useContext(ChatContext);
   const [message, setMessage] = useState([]);
   const [Loading, setLoading] = useState(false);
@@ -220,11 +239,14 @@ const ChatPanal = ({ setLastMessage }) => {
     }
   };
   return (
-    <Container>
+    <Container {...props}>
       <Header>
         <Profile>
           {data?.chatId !== "null" ? (
             <>
+              <GoBack onClick={() => setShow(false)}>
+                <IoIosArrowBack />
+              </GoBack>
               <Img src={data?.user?.photoURL} />
               <Name>{data?.user?.displayName}</Name>
             </>
@@ -279,7 +301,7 @@ const ChatPanal = ({ setLastMessage }) => {
                       e.target.files[0].type
                     ) ||
                     ["video/mp4", "video/x-m4v", "video/*"].includes(
-                      e.target.files[0]
+                      e.target.files[0].type
                     )
                   ) {
                     setFieldValue("image", e.target.files[0]);
@@ -293,7 +315,10 @@ const ChatPanal = ({ setLastMessage }) => {
               />
               <UploadIcon
                 style={{
-                  cursor: data?.chatId === "null" || (Loading && "not-allowed"),
+                  cursor:
+                    data?.chatId === "null" || Loading
+                      ? "not-allowed"
+                      : "pointer",
                   color: values.image && "#009687",
                 }}
                 title={values.image?.name}

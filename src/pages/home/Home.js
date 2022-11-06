@@ -13,19 +13,19 @@ const Home = () => {
     overflow: hidden;
     max-width: 1000px;
     box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, 0.35);
+    @media (max-width: 1050px) {
+      margin: 2rem;
+    }
+    @media (max-width: 576px) {
+      display: unset;
+      margin: 0;
+    }
   `;
-  const [lastMessage, setLastMessage] = useState("");
-
-  // useEffect(() => {
-  //   const unSub = onSnapshot(doc(db, "chats"), (doc) => {});
-  //   return () => {
-  //     unSub();
-  //   };
-  // }, []);
+  const [show, setShow] = useState(false);
   return (
     <Wrapper>
-      <UserList />
-      <ChatPanal setLastMessage={setLastMessage} />
+      <UserList setShow={setShow} className={show && "hide"} />
+      <ChatPanal setShow={setShow} className={show && "show"} />
     </Wrapper>
   );
 };

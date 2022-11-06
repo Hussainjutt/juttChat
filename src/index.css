@@ -21,3 +21,9 @@ button:disabled {
 input:disabled {
   cursor: not-allowed !important;
 }
+.show {
+  display: unset !important;
+}
+.hide {
+  display: none !important;
+}

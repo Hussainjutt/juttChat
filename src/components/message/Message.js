@@ -17,7 +17,7 @@ const Text = styled.span`
   border-radius: ${(props) =>
     props.isLeft ? "0px 10px 0px 10px" : "10px 0px 10px 0px"};
   word-wrap: break-word;
-  max-width: 375px;
+  max-width: 200px;
 `;
 const Img = styled.img`
   width: 100%;
