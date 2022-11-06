@@ -126,6 +126,7 @@ const Message = styled.p`
   width: 50px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 const Box = styled.div``;
 const UserList = ({ setShow, ...props }) => {
@@ -134,10 +135,7 @@ const UserList = ({ setShow, ...props }) => {
   const [chats, setChats] = useState([]);
   const [loader, setLoader] = useState(false);
   const handleSearch = async (userName) => {
-    const q = query(
-      collection(db, "users"),
-      where("user_name", "==", userName)
-    );
+    const q = query(collection(db, "users"), where("email", "==", userName));
     const querySnapshot = await getDocs(q);
     querySnapshot.docs.length === 0 && setUser(null);
     querySnapshot.forEach((doc) => {
@@ -241,7 +239,7 @@ const UserList = ({ setShow, ...props }) => {
             <ClipLoader color="#ccc" size={70} />
           </div>
         ) : (
-          Object.entries(chats)
+          Object?.entries(chats)
             ?.sort((a, b) => b[1]?.date - a[1]?.date)
             ?.map((el, i) => (
               <User key={i} onClick={() => openChat(el[1]?.userinfo)}>

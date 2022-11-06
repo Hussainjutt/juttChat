@@ -3,7 +3,10 @@ import styled from "styled-components";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import {
+  confirmPasswordReset,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { auth } from "../../firebase";
 import { toast } from "react-toastify";
 import { BeatLoader } from "react-spinners";
@@ -41,7 +44,6 @@ const H2 = styled.h1`
 const InputWrapper = styled.div`
   width: 100%;
   margin-bottom: 1rem;
-  position: relative;
 `;
 const Input = styled.input`
   width: 100%;
@@ -96,13 +98,15 @@ const Error = ({ isError, error }) => {
   `;
   return isError && <Message>{error}</Message>;
 };
-const Login = () => {
+const ResetPassword = () => {
   const navigate = useNavigate();
   const [loader, setLoader] = useState(false);
+  const queryParam = new URLSearchParams(window.location.search);
+  let code = queryParam.get("oobCode");
   return (
     <Container>
       <H1>Jutt Chat&#9996;</H1>
-      <H2>LogIn</H2>
+      <H2>ResetPassword</H2>
       <Formik
         initialValues={{
           email: "",
@@ -111,36 +115,20 @@ const Login = () => {
         validationSchema={schema}
         onSubmit={(values) => {
           setLoader(true);
-          signInWithEmailAndPassword(auth, values.email, values.password)
+          confirmPasswordReset(auth, code, values.password)
             .then((res) => {
-              toast.success("Sign In successfully");
+              toast.success("Password reset successfully");
               setTimeout(() => {
                 setLoader(false);
-                navigate("/home");
+                navigate("/");
               }, 1000);
             })
-            .catch((err) => {
-              toast.error(err.message);
-              setLoader(false);
-            });
+            .catch((err) => toast.error(err.message));
+          setLoader(false);
         }}
       >
         {({ handleChange, handleSubmit, values, touched, errors }) => (
           <form onSubmit={handleSubmit}>
-            <InputWrapper>
-              <Input
-                type="email"
-                placeholder="Email Address"
-                name="email"
-                onChange={handleChange}
-                value={values.email}
-                error={errors.email && touched.email}
-              />
-              <Error
-                isError={errors.email && touched.email}
-                error={errors.email}
-              />
-            </InputWrapper>
             <InputWrapper>
               <Input
                 type="password"
@@ -154,26 +142,30 @@ const Login = () => {
                 isError={errors.password && touched.password}
                 error={errors.password}
               />
-              <Link
-                style={{
-                  float: "right",
-                  marginTop: "2px",
-                  marginBottom: "1rem",
-                }}
-                onClick={() => navigate("/confirmEmail")}
-              >
-                Forgot Password?
-              </Link>
+            </InputWrapper>
+            <InputWrapper>
+              <Input
+                type="password"
+                placeholder="Password"
+                name="confirmPassword"
+                onChange={handleChange}
+                value={values.confirmPassword}
+                error={errors.confirmPassword && touched.confirmPassword}
+              />
+              <Error
+                isError={errors.confirmPassword && touched.confirmPassword}
+                error={errors.confirmPassword}
+              />
             </InputWrapper>
             <Button type="submit" disabled={loader}>
-              {loader ? <BeatLoader color="#fff" /> : "LogIn"}
+              {loader ? <BeatLoader color="#fff" /> : "Reset"}
             </Button>
             <Divider>
               <Or>Or</Or>
             </Divider>
             <Text>
-              Not have an account ,{" "}
-              <Link onClick={() => navigate("/register")}>Register now</Link>
+              Remember password ,{" "}
+              <Link onClick={() => navigate("/register")}>LogIn now</Link>
             </Text>
           </form>
         )}
@@ -182,10 +174,12 @@ const Login = () => {
   );
 };
 const schema = yup.object().shape({
-  email: yup.string().email("Not an valid Email").required("Email is required"),
   password: yup
     .string()
     .required("Password is required")
     .min(6, "To short atleast have 6 digit"),
+  confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("password"), null], "Passwords must match"),
 });
-export default Login;
+export default ResetPassword;

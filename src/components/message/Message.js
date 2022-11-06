@@ -37,18 +37,16 @@ const Time = styled.small`
   font-family: monospace;
 `;
 const Prev = styled.img`
-  width: 100%;
-  max-width: 150px;
+  width: 150px;
   max-height: 150px;
   border: 1px solid #5f5b8f;
   border-radius: 9px;
   cursor: pointer;
 `;
 const VideoPrev = styled.video`
-  width: 100%;
-  max-width: 200px;
+  width: 200px;
   height: 160px;
-  object-fit: fill;
+  object-fit: cover;
   border: 1px solid #5f5b8f;
   border-radius: 9px;
 `;

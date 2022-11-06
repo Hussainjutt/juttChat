@@ -19,6 +19,14 @@ const Container = styled.div`
   padding: 2rem;
   border-radius: 0.75rem;
   box-shadow: 0px 0px 9px 2px rgba(0, 0, 0, 0.35);
+  @media (max-width: 576px) {
+    width: 100%;
+    height: 100vh;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
 `;
 const H1 = styled.h1`
   font-size: 40px;
@@ -154,6 +162,7 @@ const Register = () => {
         navigate("/");
       }, 1000);
     } catch (err) {
+      setLoading(false);
       toast.error(err.message);
     }
   };

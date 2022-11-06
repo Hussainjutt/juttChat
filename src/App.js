@@ -6,6 +6,9 @@ import Home from "./pages/home/Home";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthContext } from "./context/AuthContext";
+import Profile from "./pages/profile/Profile";
+import ConfirmEmail from "./pages/auth/confirmEmail";
+import ResetPassword from "./pages/auth/resetPassword";
 
 const App = () => {
   const { currentUser } = useContext(AuthContext);
@@ -30,6 +33,16 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          {/* <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          /> */}
+          <Route path="/confirmEmail" element={<ConfirmEmail />} />
+          <Route path="/reserPassword" element={<ResetPassword />} />
         </Routes>
       </BrowserRouter>
     </>
