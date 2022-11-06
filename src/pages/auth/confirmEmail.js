@@ -110,15 +110,18 @@ const ConfirmEmail = () => {
           email: "",
         }}
         validationSchema={schema}
-        onSubmit={(values) => {
-          setLoader(true);
-          sendPasswordResetEmail(auth, values.email)
-            .then((res) => {
-              toast.success("Reset link has been send to your Email");
+        onSubmit={async (values) => {
+          try {
+            setLoader(true);
+            await sendPasswordResetEmail(auth, values.email);
+            toast.success("Reset link has been send to your Email");
+            setTimeout(() => {
               setLoader(false);
-            })
-            .catch((err) => toast.error(err.message));
-          setLoader(false);
+            }, 100);
+          } catch (err) {
+            toast.error(err.message);
+            setLoader(false);
+          }
         }}
       >
         {({ handleChange, handleSubmit, values, touched, errors }) => (

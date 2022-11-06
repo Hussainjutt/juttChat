@@ -113,18 +113,19 @@ const ResetPassword = () => {
           password: "",
         }}
         validationSchema={schema}
-        onSubmit={(values) => {
-          setLoader(true);
-          confirmPasswordReset(auth, code, values.password)
-            .then((res) => {
-              toast.success("Password reset successfully");
-              setTimeout(() => {
-                setLoader(false);
-                navigate("/");
-              }, 1000);
-            })
-            .catch((err) => toast.error(err.message));
-          setLoader(false);
+        onSubmit={async (values) => {
+          try {
+            setLoader(true);
+            await confirmPasswordReset(auth, code, values.password);
+            toast.success("Password reset successfully");
+            setTimeout(() => {
+              setLoader(false);
+              navigate("/");
+            }, 1000);
+          } catch (err) {
+            toast.error(err.message);
+            setLoader(false);
+          }
         }}
       >
         {({ handleChange, handleSubmit, values, touched, errors }) => (
@@ -146,7 +147,7 @@ const ResetPassword = () => {
             <InputWrapper>
               <Input
                 type="password"
-                placeholder="Password"
+                placeholder="Confirm Password"
                 name="confirmPassword"
                 onChange={handleChange}
                 value={values.confirmPassword}
@@ -165,7 +166,7 @@ const ResetPassword = () => {
             </Divider>
             <Text>
               Remember password ,{" "}
-              <Link onClick={() => navigate("/register")}>LogIn now</Link>
+              <Link onClick={() => navigate("/")}>LogIn now</Link>
             </Text>
           </form>
         )}
